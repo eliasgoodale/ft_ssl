@@ -1,0 +1,36 @@
+
+
+Step 1: all bits are 0 padded so that its length is 64 shy of 512 (448 % 512)
+		> Padding is performed by adding a single 1 bit to the message, followed by a string of 0s
+			so that (448 % 512 - 0pad - 1) = 32;
+		> At least 1 bit and at most 512 bits are appended to the b-string;
+		> 
+
+			We first define a four word buffer
+				> each is a 32 bit quantity
+				     word A: 01 23 45 67
+         			 word B: 89 ab cd ef
+         			 word C: fe dc ba 98
+         			 word D: 76 54 32 10
+			
+			Next, define 4 auxillary functions
+			All take 3 32 bit words and return 1 32 bit word:
+
+			function: F(A,B,C):
+				return (A & B | ~(C))
+			function: G(A,B,C):
+				return (A & C | ~(C))
+			function: H(A,B,C):
+				return (A ^ B ^ C)
+			function: Y(A,B,C):
+				return (B ^ (A | ~(C)))
+			
+			These functions operate using a 64 element table: T[64];
+
+			to construct the table:
+			
+	for each byte in the input string, group the bytes together in groups of 4 and those groups into 32 bit words
+	save 
+			save in a variable A & A, B as B & B etc
+
+			A = A + AA
