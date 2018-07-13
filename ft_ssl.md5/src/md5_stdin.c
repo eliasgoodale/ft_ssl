@@ -6,14 +6,13 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/24 18:03:14 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/12 16:15:08 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 14:56:19 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../ft_ssl.h"
 
-
-void	md5_stdin()
+void	md5_stdin(void)
 {
 	t_vector	v;
 	int			ret;
@@ -21,8 +20,8 @@ void	md5_stdin()
 
 	if (ft_vector_init(&v, BUFF_SIZE) == -1)
 		return ;
-	while((ret = read(STDIN_FILENO, buf, BUFF_SIZE)))
+	while ((ret = read(STDIN_FILENO, buf, BUFF_SIZE)))
 		ft_vector_nappend(&v, buf, ret);
 	md5_string(v.data);
-	ft_vector_free(&v);		
+	ft_vector_free(&v);
 }

@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/15 18:35:22 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/12 16:15:08 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 14:52:16 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,11 @@ char	parse_flags(char *flag_s)
 
 int		parse_string_args(int ac, char **av, int arg)
 {
-	while(++arg < (ac - 1) && av[arg][0] == '-' && av[arg][1] == 's')
+	while (++arg < (ac - 1) && av[arg][0] == '-' && av[arg][1] == 's')
 	{
 		if (ft_strcmp(av[arg], "-s") == 0)
 		{
-			if(arg != ac - 1)
+			if (arg != ac - 1)
 				md5_string(av[++arg]);
 			else
 			{
@@ -46,11 +46,10 @@ int		parse_string_args(int ac, char **av, int arg)
 				exit(0);
 			}
 		}
-		else if(av[arg][0] == '-' && av[arg][1] == 's')
+		else if (av[arg][0] == '-' && av[arg][1] == 's')
 			md5_string(&av[arg][2]);
 	}
 	return (arg);
-
 }
 
 int		parse_file_args(int ac, char **av, int arg)
@@ -58,7 +57,7 @@ int		parse_file_args(int ac, char **av, int arg)
 	VAR(char, flags, 0);
 	if (av[arg][0] == '-')
 		flags = parse_flags(av[arg++]);
-	while(arg < ac)
+	while (arg < ac)
 		md5_file(av[arg++], flags);
 	return (arg);
 }
@@ -68,11 +67,9 @@ void	md5_parse_args(int ac, char **av)
 	VAR(int, arg, 0);
 	arg = parse_string_args(ac, av, arg);
 	arg = parse_file_args(ac, av, arg);
-	
 }
 
-
-int generate_md5(int ac, char **av)
+int		generate_md5(int ac, char **av)
 {
 	if (ac > 1)
 	{
@@ -80,42 +77,5 @@ int generate_md5(int ac, char **av)
 	}
 	else
 		md5_stdin();
-	return 0;
+	return (0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

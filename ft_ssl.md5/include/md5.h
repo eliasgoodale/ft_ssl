@@ -6,17 +6,14 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/15 17:11:08 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/12 15:54:05 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 14:55:11 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MD5_H
 #define MD5_H
 
-
-
-
-enum e_md5_flag 
+enum flag
 {
 	QUIET = (1 << 0),
 	REVERSE = (1 << 1)
