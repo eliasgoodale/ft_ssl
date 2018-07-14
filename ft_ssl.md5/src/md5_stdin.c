@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/24 18:03:14 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 14:56:19 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 15:57:50 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,6 @@ void	md5_stdin(void)
 		return ;
 	while ((ret = read(STDIN_FILENO, buf, BUFF_SIZE)))
 		ft_vector_nappend(&v, buf, ret);
-	md5_string(v.data);
+	sha256_string(v.data);
 	ft_vector_free(&v);
 }

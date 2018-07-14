@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/16 13:51:10 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 14:59:11 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 22:13:16 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,24 +22,22 @@ void	md5_init_ctx(t_md5_ctx *ctx)
 	ctx->state[3] = 0x10325476;
 }
 
-void	md5_print(unsigned char digest[16])
+void	md5_print_digest(unsigned char digest[16])
 {
 	VAR(unsigned, i, -1);
 	while (++i < 16)
 		ft_printf("%02x", digest[i]);
 }
 
-void	md5_string(char *s)
+void	md5_string(char *input)
 {
 	t_md5_ctx		ctx;
 	unsigned char	digest[16];
 	unsigned		len;
 
-	len = ft_strlen(s);
+	len = ft_strlen(input);
 	md5_init_ctx(&ctx);
-	md5_update(&ctx, (unsigned char *)s, len);
+	md5_update(&ctx, (unsigned char *)input, len);
 	md5_final(digest, &ctx);
-	ft_printf("MD5 (\"%s\") = ", s);
-	md5_print(digest);
-	ft_printf("\n");
+	md5_print(digest, input);
 }

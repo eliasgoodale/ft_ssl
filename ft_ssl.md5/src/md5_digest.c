@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/16 14:39:12 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 13:51:50 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 16:00:46 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void	md5_final(unsigned char digest[16], t_md5_ctx *ctx)
 	md5_update(ctx, padding, pad_len);
 	md5_update(ctx, bits, 8);
 	md5_encode(digest, ctx->state, 16);
-	md5_memsetx((unsigned char *)ctx, 0, sizeof(*ctx));
+	md5_memset((unsigned char *)ctx, 0, sizeof(*ctx));
 }
 
 void	md5_update(t_md5_ctx *ctx, unsigned char *input, size_t input_len)

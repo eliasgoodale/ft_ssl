@@ -6,13 +6,12 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/11 15:38:41 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/12 15:54:00 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/13 22:09:21 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#ifndef FT_SSL_H
-#define FT_SSL_H
+#	ifndef FT_SSL_H
+#	define FT_SSL_H
 
 #include <stdint.h>
 #include <fcntl.h>
@@ -25,5 +24,9 @@
 #include "ft_ssl.sha256/include/sha256.h"
 
 #define BUFF_SIZE 10
+#define EXISTS_BEFORE(a, b) ((a && !b) || (a && b && a < b) ? 1 : 0)
 
-#endif
+enum		e_flag_set{QUIET = (1 << 0), REVERSE = (1 << 1)};
+extern char	g_flags;
+
+#	endif

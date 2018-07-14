@@ -1,32 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bitmix.h                                           :+:      :+:    :+:   */
+/*   sha256_stdin.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/06/15 19:38:00 by egoodale          #+#    #+#             */
-/*   Updated: 2018/06/15 19:45:47 by egoodale         ###   ########.fr       */
+/*   Created: 2018/07/13 15:55:42 by egoodale          #+#    #+#             */
+/*   Updated: 2018/07/13 21:44:24 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef BITMIX_H
-#define BITMIX_H
+#include "../../ft_ssl.h"
 
-#define BITMIX_BUILTIN 3
-
-typedef	uint32_t t_bitmix_f(uint32_t, uint32_t, uint32_t);
-
-typedef struct	s_bitmix
+void	sha256_stdin(void)
 {
-	char		op;
-	t_bitmix_f 	mixer;
-}				t_bitmix;
+	t_vector	v;
+	int			ret;
+	char		buf[BUFF_SIZE];
 
-t_bitmix g_mixer_tab[] = {
-	{'F', &f_mix},
-	{'G', &g_mix},
-	{'H', &h_mix}
-};
-
-#endif
+	if (ft_vector_init(&v, BUFF_SIZE) == -1)
+		return ;
+	while ((ret = read(STDIN_FILENO, buf, BUFF_SIZE)))
+		ft_vector_nappend(&v, buf, ret);
+	sha256_string(v.data);
+	ft_vector_free(&v);
+}
