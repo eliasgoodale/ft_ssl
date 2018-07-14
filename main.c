@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/15 18:35:22 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 22:25:05 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/14 09:03:05 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@ int		main(int ac, char **av)
 		else if (ft_strcmp("sha256", av[hash_ftype]) == 0)
 			generate_sha256((ac - 1), (av + 1));
 		else
-			ft_printf("Argument %s is invalid. usage:\
-			./ft_ssl<md5/sha256> <flags/args>", av[hash_ftype]);
+			ft_printf("Argument %s is invalidn.\nUsage: \
+./ft_ssl <md5/sha256> <flags/args>\n", av[hash_ftype]);
 	}
 	else
-		ft_printf("Usage: ./ft_ssl <md5/sha256> <flags/args>");
+		ft_printf("Usage: ./ft_ssl <md5/sha256> <flags/args>\n");
 }

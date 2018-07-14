@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/13 13:18:30 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 21:34:05 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/14 09:51:15 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,12 @@
 
 void	sha256_print(uint8_t digest[32], char *input)
 {
-	if (g_flags & QUIET)
+	if (g_flags & STDINREAD)
+	{
+		ft_printf("%s", input);
+		sha256_print_digest(digest);
+	}
+	else if (g_flags & QUIET)
 		sha256_print_digest(digest);
 	else if (g_flags & REVERSE)
 	{

@@ -6,7 +6,7 @@
 #    By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/06/16 19:20:37 by egoodale          #+#    #+#              #
-#    Updated: 2018/07/13 22:25:34 by egoodale         ###   ########.fr        #
+#    Updated: 2018/07/14 09:05:59 by egoodale         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ SHA256_OBJ = $(addprefix obj/, $(SHA256_SRC:.c=.o))
  
 HDR = ft_ssl.h
 LIBFT_A = libft/libft.a
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g
 MAIN_DRIVER = main.c
 all: $(NAME)
 

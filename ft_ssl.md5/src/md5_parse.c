@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/03 17:39:54 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 22:12:04 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/14 09:53:39 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ void	md5_parse_flags(char *flag_s)
 	VAR(char *, q_loc, ft_strchr(flag_s, 'q'));
 	VAR(char *, r_loc, ft_strchr(flag_s, 'r'));
 	if (EXISTS_BEFORE(p_loc, s_loc))
-		md5_stdin();
+		while (*((++p_loc) - 1) == 'p')
+			md5_stdin();
 	if (EXISTS_BEFORE(q_loc, s_loc))
 		g_flags |= QUIET;
 	if (EXISTS_BEFORE(r_loc, s_loc))

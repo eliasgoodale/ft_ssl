@@ -6,7 +6,7 @@
 /*   By: egoodale <egoodale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/03 10:25:27 by egoodale          #+#    #+#             */
-/*   Updated: 2018/07/13 21:24:10 by egoodale         ###   ########.fr       */
+/*   Updated: 2018/07/14 09:44:28 by egoodale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,12 @@
 
 void	md5_print(unsigned char digest[16], char *input)
 {
-	if (g_flags & QUIET)
+	if (g_flags & STDINREAD)
+	{
+		ft_printf("%s", input);
+		md5_print_digest(digest);
+	}
+	else if (g_flags & QUIET)
 		md5_print_digest(digest);
 	else if (g_flags & REVERSE)
 	{
