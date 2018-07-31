@@ -1,0 +1,572 @@
+42 RSA requirements:
+	genrsa: generates a private key to the standard output or to a file
+		flags required: -rand -i -o you may not use rand() or time()
+	rsa:
+		flags required: -inform PEM, -outform PEM, -in file
+						-passing arg, -out file, -passout arg, -des
+						-text -noout -modulus -check -pubin -pubout
+	rsautl:
+		signs, verifys and encrypts the data using the RSA algorithm
+		flags required: -in file -out file -inkey file -pubin -encrypt
+						-decrypt -hexdump
+	SHA-256  SHA-256: (0x)30 31 30 0d 06 09 60 86 48 01 65 03 04 02 01 05 00
+                   04 20 || H.
+	
+
+Notation:
+
+c = an integer between 0 and n - 1
+C = an octet string
+d = RSA private exponent
+d_i = 
+
+
+RSA public keys and private keys form an RSA key pair.
+the specification also supports "multi-prime" functionality
+wherin you may have more than *p and *q in the series product
+*n
+
+Terms:
+*u : number of prime factors in the RSA modulus 
+*n : RSA modulus n = Πᵢ₌₁ʳⁱ to a bounds of *u 
+*p, *q : first two prime factors of n
+*r_i : ith prime factor of RSA :  r_1 = *p, r_2 = *q
+*λ : lcm(*r_1 - 1, *r_2 - 1 ... *r_u - 1)
+
+Public Key:
+	consists of two components:
+		*n : the RSA modulus, a positive integer;
+		*e : the RSA public exponent, a positive integer;
+The RSA modulus is a product of *u disctinct odd primes r_i
+wherin: *u ≥ 2
+
+the RSA public exponent *e is an int  (3 ≤ e < n - 1)
+
+wherin: GCD(e, *λ(n)) = 1 (lcm is 1 between them)
+
+Terms:
+*d : the RSA private exponent
+*dP, *dQ : *p/*q's CRT exponent,
+*qInv : the (first) CRT coefficient
+*d_i : the i-th factor's CRT exponent
+
+Private Key:
+	has two representations:
+		1 : key consists of the pair (*n, *d)
+		2 : key consists of a quintuple(*p, *q, *dP, *dQ, *qInv)
+	(unsigned)*dP,*dQ < *p,*q 
+			  and
+	e * dP == 1 (mod(p - 1))
+	e * dQ == 1 (mod(q - 1))
+q * qInv == 1 (mod p)
+
+
+Encryption/Decryption Primitives:
+
+I2OSP (Integer to Octet String Primitive)
+	inputs:
+		x		nonnegative integer to be converted
+		xLen	intended length of the octet string
+	Converts an 0 < integer < 256^xLen
+1.) if x >= 256^xLen output too large (you may encode 256 bits of information per digit)
+2.) Write the integer x in its unique xLen-digit representations
+	ex: x = 256
+		xLen = 2
+		x_(1) 256^1
+		x_(2) 256^0
+		is 10 in base 256.
+3.) output the octet string
+
+OS2IP
+reverses I2OSP
+
+|RSAEP
+|	inputs:
+|	(n, e) (RSA public key)
+|	(m)		message representative (int between 0 and n - 1)
+|	outputs:
+|	c 		ciphertext representative, an int between 0 and n - 1
+|	steps:
+|	1.) output message not in range if m is not between 0 and n - 1
+|	2.) c = m^e mod n
+|	3.) output c
+|
+|RSADP
+|	inputs:
+|	(K, c)
+|	Input:
+|	K		RSA private key (either pair or quintuple)
+|	c 		ciphertext representative
+|
+|	output:
+|	m		message representative
+
+Signature and verification Primitives:
+	signature primivitves produce signature representatives from message representatives
+	under control of the private Key.
+
+RSASP1
+	inputs:
+	K : (n, d) or [(p, q, dP, dQ, qInv) and (r_i, d_i, t_i)(possibly empty triplet)]
+	m : message representative, int between 0 and n - 1
+
+	outputs
+	s signature representative
+
+RSAVP1
+	Input:
+		(n , e) public key
+		s 		signature representative
+	Output:
+		m		message representative
+
+Schemes:	2 types of schemes : encryption schemes, signature schemes
+
+Encryption Schemes:
+	consists of an encryption, and decryption operation. Wherein encryption produces a cipher text
+	from a message with the recipients RSA public key and the decryption operation recovers the message
+	from the ciphertext with the recipients corresponding RSA private key. They follow a general model similiar
+	to that employed in IEEEE STd 1363-2000 by combining encryption and decryption primitives with an encoding
+	method for encryption. An encrypt operation 
+2 encryption schemes:
+	RSAES-OAEP, and RSAES-PKCS1-v1_5. (RSAES-OAEP used for new applications, latter for compatiblility)
+	RSAES-OAEP uses RSAEP and RSADP primitives along with the EME-OAEP encoding method which is based operation
+	Bellare and Rogaway's Optimal Asymmetric Encryption scheme. This method may operate on meessages of up to
+	k - 2hLen - 2 octets, wherein hLen is the length of the outputs from the underlying hash function and k
+	is the lenght in octest of the recipients RSA modulus 
+
+RSAES-OAEP-ENCRYPT
+	call_functions:
+		Hash(SHA-256) : Hash function to be used to produce hash of label Length
+		MGF :			Mask generation function
+	inputs:
+		(n, e) :	recipients RSA public key (k denotes the length in octets of n)
+		M :			message to be encrypted, octet string of length mLen, where mLen <= k - 2hLen - 2
+		L :			optional label to be associated with the message, defaults to empty string if not
+					provided
+	variables:
+		lHash :		hash produced from L
+		hLen :		length of string produced from Hash(L)
+		PS :		zeroed octet string of (k - mLen - 2(hLen) - 2) octets
+		EM :		encoded message resulting from concat(0x00, maskedSeed, maskedDB)
+
+	outputs:
+		C :			ciphertext, an octet string of len k
+
+	Steps:
+		1.) Length Check
+			a.) If the len(L) > 2^61 - 1 output "label too long"
+			b.) If mLen > k - 2hLen - 2
+		2.) EME-OAEP encoding
+			a.) If L is not provided L = "", lHash = Hash(L), an octet string of hLen
+			b.) Generate an octet string PS
+			c.) Concat lHash, PS, an octet containing 0x01(0b00000001) and the message M
+				to form data block DB of length k
+			d.) Generate a random octet string seed of length hLen.
+			e.) Let dbMask = MGF(seed, k - hLen - 1)
+			f.) Let maskedDB = DB ^ dbMask
+			g.) Let seedMask = MGF(maskedDB, hLen)
+			h.) Let maskedSeed = seek ^ seekMask
+			i.) Concat a single octet (val = 0x00) with masked DB and maskedSeed to form EM
+		3.)
+			a.) Convert the encoded message EM to an integer message representative m:
+				m = OS2IP(EM)
+			b.) Apply the RSAEP encryption primitive to the RSA public key (n, e) and the message rep m to
+				produce an integer ciphertext rep c:
+				c = RSAEP((n, e), m)
+			c.) Convert the ciphertext representative c to ciphertext C of len k octets
+				C = I2OSP(c, k)
+		4.)
+			a.) return (C) 
+			
+                    +----------+---------+-------+
+               DB = |  lHash   |    PS   |   M   |
+                    +----------+---------+-------+
+                                   |
+         +----------+              V
+         |   seed   |--> MGF ---> xor
+         +----------+              |
+               |                   |
+      +--+     V                   |
+      |00|    xor <----- MGF <-----|
+      +--+     |                   |
+        |      |                   |
+        V      V                   V
+      +--+----------+----------------------------+
+EM =  |00|maskedSeed|          maskedDB          |
+      +--+----------+----------------------------+
+
+RSAES-OAEP-DECRYPT
+	Inputs:
+		K (n, d) :	recipient's private key (k denotes the length of n)
+		C :			ciphertext to be decrypted (k = 2hLen + 2)
+		L :			label(same as encrypt)
+
+	Outputs:
+		M :			message(octet string of mLen) wherein mLen <= (k - 2hLen - 2)
+
+	Steps:
+		1.) Length checking:
+			a.) if len(L) > HashInputLimit output
+			b.) if len(C) != k output 
+			c.) if k < 2hLen + 2, 
+				---> "decryption error"
+		2.) RSA decryption:
+			a.) Convert the ciphertext C to an integer ciphertext rep (c = O2SIP(C))
+			b.) Apply RSADP decryption primitive to K and c to produce m (m = RSADP(K, c))
+			c.) Convert m to an encoded message EM of length k octets (EM = I2OSP(m, k))
+		3.)
+			a.) If L is not provided, let L = an empty string. (lHash = Hash(L))
+			b.) Separate the encoded message EM into a single octet Y
+			c.) Let seekMask = MGF(maskedDB, hLen)
+			d.) Let seed = maskedSeed ^ seedMask
+			e.) Let dbMask = MGF(seed, k - hLen - 1)
+			f.) let DB = maskedDB ^ dbMask
+			g.) Separate DB into an octet string lHash(hLen = len(lHash)) a (possibly empty) Pad
+				string PS with values 0x00. and a message M as (DB = concat(lHash, PS, 0x01, M))
+		4.)
+			a.) return (M)
+		
+Signature Schemes : consists of 2 operations, signature generation and verification.
+	Generation:
+		Produces a signature from a message with a signer's RSA private key. This operation applys
+		a mesage encoding operation to a message to produce an encoded message, which is then converted
+		to an integer message representative. A signature primitive is then applied to the message rep
+
+	Verification:
+		Verifys the message with the users corresponding RSA public key.
+2 Signature Schemes : RSASSA-PSS and  RSASSA-PKCS1-v1_5 with RSASSA-PSS scheduled for new applications
+
+RSASSA-PSS
+	Combines RSASP1 and RSAVP1 primitives with the EMSA-PSS encoding method.
+
+Signature generation operation(RSASSA-PSS-SIGN):
+	Inputs:
+		K :	signer's RSA private key
+		M :	message to be signed, (char *)
+	Output:
+		S : signature, an octet string of len k, where k is the length in octets of the RSA modulus n
+
+	Steps:
+		1.) EMSA-PSS-ENCODE
+			a.) EM = EMSA-PSS-ENCODE(M, modBits - 1)
+		2.) RSA signature:
+			a.) Convert EM to an integer message rep m (m = OS2IP(EM))
+			b.) Apply the RSASP1 signature primitive to the RSA private key K and
+				message rep m to produce an integer signature rep s:
+				(s = RSASP1(K, m))
+			c.) Convert s to a signature S of length k octets (S = I2OSP(s, k))
+		3.)
+			a.) return(S)
+
+Signature verification operation(RSASSA-PSS-VERIFY
+	Inputs:
+	(n, e) :	RSA public key
+	M :			Message whose signature is to be verified
+	S :			signature to be verified, octet string of len k, where k is the length in
+				octets of the RSA modulus n
+	Output:
+		"valid = true/false"
+	Steps:
+		1.)	Length Checking
+			a.) If len(S) (in octets) != k "error"
+		2.) RSA verification
+			a.) Convert the signature S to an integer sig representative (s = OS2IP(S))
+			b.) Apply RSAVP1 to the public key and signature rep to produce m (m = RSAVP1((n, e), s))
+			c.) Convert m to an encoded message EM of length (emLen = ceil((modBits - 1) / 8)) where
+				modBits is the length of the RSA modulus in BITS
+				EM = I2OSP (m, emLen)
+		3.) EMSA-PSS verification
+			Result = EMSA-PSS-VERIFY(M, EM, modBits - 1)
+		4.) If [x]verified return(valid = true)
+
+EMSA-PSS :	This encoding method is determined by its parameters : choice of hash function, mask generation function,
+			and salt length. These options are fixed for a given RSA key, except the salt length can be variable
+			length. 
+
+										                         +-----------+															
+										                         |     M     |
+										                         +-----------+
+										                               |
+										                               V
+										                             Hash
+										                               |
+										                               V
+										                 +--------+----------+----------+
+										            M' = |Padding1|  mHash   |   salt   |
+										                 +--------+----------+----------+
+										                                |
+										      +--------+----------+     V
+										DB =  |Padding2|maskedseed|   Hash
+										      +--------+----------+     |
+										                |               |
+										                V               |    +--+
+										               xor <--- MGF <---|    |bc|
+										                |               |    +--+
+										                |               |      |
+										                V               V      V
+										      +-------------------+----------+--+
+										EM =  |    maskedDB       |maskedseed|bc|
+										      +-------------------+----------+--+
+
+EMSA-PSS-ENCODE
+	call_functions:
+		Hash(SHA256) :	choice of hash
+		MGF :			mask generation function
+		sLen :			intended length in octets of the salt
+
+	Inputs:
+		M :				message to be encoded
+		emBits :		max bit length of the integer resulting from OS2IP(EM), (at least 8hLen + 8sLen + 9)
+	
+	Outputs
+		EM :			encoded message, octet string of (emLen = ceil(emBits / 8)
+
+	Steps:
+		1.) If len(M) > SHAINPUTLIMIT output "message too long"
+		2.) Let mHash = Hash(M), of length hLen
+		3.) if emLen < hLen + sLen + 2, output "encoding error"
+		4.) Generate a random octet string salt of length sLen. if sLen = 0 then salt is an empty string.
+		5.) Let M' = concat((0x)00 00 00 00 00 00 00 00 00, mHash, salt)
+		6.) Let H = Hash(M'), an octet string of length hLen
+		7.) Generate a string PS of (emLen - sLen - hLen - 2) zeroed octets
+		8.) Let DB = concat(PS, 0x01, salt) DB has a length of emLen - hLen - 1.
+		9.) Let dbMask = MGF(H, emLen - hLen - 1)
+		10.) Let maskedDB = DB ^ dbMask
+		11.) Set the leftmost 8emLen - emBits
+		12.) Let EM = concat(maskedDB, H, 0xbc)
+		13.) return(EM)
+
+EMSA-PSS-VERIFY
+	call_functions:
+		Hash(SHA256) :	choice of hash
+		MGF :			mask generation function
+		sLen :			intended salt length(octets)
+
+	Input:
+		M :				message to be verified
+		EM :			encoded message, string of length (emLen = ceil(emBits/8)
+		emBits :		maximal bit length of the integer OS2IP(EM) (8hLen + 8sLen + 9)
+
+	Output:
+		"consistent" or "inconsistent"
+	Steps:
+		1.) If len(M) > HashInputLimit output "inconsistent" stop
+		2.) Let mHash = Hash(M), a string of length hLen
+		3.) If emLen < hLen + sLen + 2 output "inconsistent" stop
+		4.) If the rightmost octet doesnt have 0xbc as its value "inconsistent"
+		5.) Let maskedDB be the leftmost emLen - hLen - 1 octets of EM, and
+			let H be the next hLen octets
+		6.) If the leftmost 8emLen - emBits bits in the leftmost octet in maskedDB
+		7.) Let dbMask = MGF(H, emLen - hLen - 1)
+		8.) Let (DB = maskedDB ^ dbMask)
+		9.) Set the leftmost (8emLen - emBits) bits of the leftmost octet in DB to zero
+		10.) If the emLen - hLen - sLen - 2 leftmost octets of DB are not zero
+       		 or if the octet at position emLen - hLen - sLen - 1 (the leftmost
+       		 position is "position 1") does not have hexadecimal value 0x01,
+       		 output "inconsistent" and stop.
+		11.) Let salt be the last sLen octets of DB.
+		12.) Let M' = concat(0x00 00 00 00 00 00 00 00, mHash, salt)
+		13.) Let H' = Hash(M'), an octet string of len(hLen)
+		14.) If H = H', output "consistent" else output "inconsistent"
+ 
+RSA public key syntax
+
+
+TERMS
+INTEGER = unsigned int
+k = len(n) (in octets)
+
+
+ASN.1 type RSA public key
+
+	RSAPublicKey ::= SEQUENCE {
+		modulus			INTEGER, -- n
+		publicExponent	INTEGER, -- e
+	}
+
+ANS.1 type RSA private key
+
+	RSAPrivateKey ::= SEQUENCE {
+		version			Version,
+		modulus			INTEGER, -- n
+		publicExponent	INTEGER, -- e
+		privateExponent	INTEGER, -- d
+		prime1			INTEGER, -- p (prime factor p of n)
+		prime2			INTEGER, -- q (prime factor q of n)
+		exponent1 		INTEGER, -- d (mod(p - 1))
+		exponent2		INTEGER, -- d (mod(q - 1))
+		coefficient		INTEGER, -- ~q (mod(p))
+		otherPrimeInfos	OPInfos, -- OPTIONAL
+	}
+
+Version:
+	Version ::= INTEGER { 
+		two-prime(0)
+		multi(1) 
+	}
+
+OPInfos:
+	OPInfos ::= SEQUENCE {
+		prime		INTEGER, -- r_i (prime factor r_i of n, where i >= 3)
+		exponent	INTEGER, -- d_i (d_i = d mod (r_i - 1)) 
+		coefficient	INTEGER, -- t_i (CRT coefficient       ᵤ
+													t_i = (Πᵢ₌₁ʳⁱ)^(-1) mod r_i)
+	}
+
+Simple example: (geeks for geeks)
+
+1.) Select 2 prime no's. 
+		p = 53 && q = 59 
+2.) Generate a public key 
+		n = p * q = 3127
+3.) Choose a small exponent e (1 < e < Φn)
+		e = 3
+4.) Generate a private key
+		calculate Φn:
+			Φn = (p - 1)(q - 1)
+			Φn = 3016
+		calculate private key, d:
+			d = (k * Φ(n) + 1) / e for some integer k (k = 2)
+			for (k = 2), value of d is 2011
+5.) Convert letters to numbers: H = 8, I = 9
+	encrypted_data c = 89ᵉ mod n
+	Thus, our Encrypted Data comes out to be 1394
+6.) Decrypt data
+	decrypted_data = (cᵈ mod n) = 89
+
+Primorial Definitition for natural numbers
+
+	For the ith prime number pᵢ the primorial pᵢ# is defined 
+	as the product of the first i primes:
+		      ᵢ
+		pᵢ# ≡ Πᵖᵏ 
+			 ᵏ⁼¹ 
+	for instance,
+		p₅# = 2 * 3 * 5 * 7 * 11
+	
+	
+	For a positive integer n, a primorial n# can also be defined as the 
+	product of those primes ≤ n 
+	     π₍n₎
+	n# ≡ Πᵢ₌₁ᵖⁱ = ᵖπ₍n₎
+	where π₍n₎ is the prime_counting function 
+
+Primality Testing:
+
+We can reduce the sample size by √n since (example 100)
+100 = [|2 × 50 = 4 × 25 = 5 × 20 = 10 |×| 10 = 20 × 5 = 25 × 4 = 50 × 2|]
+
+when 10 (√100) is reached we flip divisors.
+Therefore we must only check numbers that are less than it's square root
+√17 ~= 4.17 so (2, 3 4) = (2 , 3) because 2 * 2 = 4
+17 is prime because it is not divisible by 2 and 3 
+
+This algorithm can be improved by observing that all primes are of 
+the form (6k + 1) with the exception of 2 and 3. All integers may be expressed
+as (6k + i) for some integer k and for i = (-1, 0, 1, 2, 3, or 4) 
+2 divides (6k + 0),(6k + 2),(6k + 4) and 3 divides (6k + 3). A more efficient method
+is to test if n is divisible by 2 or 3, through all the numbers of the form (6k ± 1 ≤ √n)
+
+All primes can further be seen to be of the form c#k + i for i < c#
+i represents the numbers that are coprime to c#. For example:
+	Let c = 6. c# = 2 * 3 * 5 = 30. 
+	All integers are of the form 30k + i (for i = 0; i < 30: i++) (any integer k)
+	However, 2 divides 0, 2, 4 ...,28,  3 divides 0,3,6,...27, 5 divides 0, 5, 10...25.
+	So all prime numbers are of the form 30k + i for i = 1, 7, 11, 13, 17, 19, 23, 29.
+	Therefore if i and 30 are not coprime, then 30k + i would be dividsible by a prime
+	divisor of 30, like 2, 3, or 5, and would therefore not be pime
+As c->∞, the number of values that c#k + i can take over a certain range decreases
+
+Fermats little theorem:
+if p is a prime number, then for any integer a, the number aᵖ - a is an integer multiple of p
+3⁵ - 3 = 240 an integer multiple of 5
+7³ - 7 = 336 an integer multiple of 3
+
+if a is not divisible by p, then the equivalent statement is that aᵖ⁻¹ - 1 is an integer multiple
+of p. Or in symbols:
+aᵖ⁻¹ ≡ 1 (mod p)
+
+3⁵⁻¹ = 81 - 1 = 80, 16 * 5 = 80.
+
+ 
+
+Miller-Rabin primality test
+
+Suppose n is prime with n > 2, n - 1 must be even, and can be written 2ˢd, where s and d are
+positive integers, and d is odd.
+For each a in Z/nZ either
+
+aᵈ ≡ 1(mod n)
+or
+a²^ʳˣᵈ ≡ -1(mod n)
+
+
+
+Steps 
+	1.)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

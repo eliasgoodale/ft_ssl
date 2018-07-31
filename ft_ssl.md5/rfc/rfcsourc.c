@@ -323,10 +323,10 @@ void MD5File (char *filename)
   FILE *file;
   MD5_CTX context;
   int len;
-  unsigned char buffer[BUFF_SIZE], digest[16];
+  unsigned char buffer[BUFF_SIZE + 1], digest[16];
 
   
-  buffer[BUFF_SIZE] = ''
+  buffer[BUFF_SIZE] = 0;
   if ((file = fopen (filename, "rb")) == NULL)
  printf ("%s can't be opened\n", filename);
 
